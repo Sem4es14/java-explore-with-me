@@ -1,47 +1,55 @@
-package ru.yandex.ewmmain.event.dto;
+package ru.yandex.ewmmain.event.requestdto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.yandex.ewmmain.category.model.Category;
-import ru.yandex.ewmmain.event.model.EventState;
-import ru.yandex.ewmmain.user.dto.UserShortDto;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class EventFullDto {
-    private Long id;
+public class EventAdminUpdateRequest {
+    @NotEmpty
+    @NotNull
     private String title;
+    @NotEmpty
+    @NotNull
     private String description;
+    @NotEmpty
+    @NotNull
     private String annotation;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime createdOn;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime publishedOn;
+    @NotNull
     private Boolean paid;
-    private EventState state;
+    @NotNull
     private Boolean requestModeration;
+    @NotNull
+    @Positive
+    private Long category;
+    @NotNull
+    @PositiveOrZero
     private Integer participantLimit;
-    private Category category;
-    private UserShortDto initiator;
-    private Integer views = 0;
-    private Integer confirmedRequests = 0;
+    @NotNull
     private Location location;
+
 
     @Getter
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Location {
-        private float lat;
-        private float lon;
+        @NotNull
+        private Float lat;
+        @NotNull
+        private Float lon;
     }
 }

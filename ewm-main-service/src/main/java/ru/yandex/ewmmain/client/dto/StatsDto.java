@@ -1,4 +1,4 @@
-package ru.yandex.ewmmain.user.dto;
+package ru.yandex.ewmmain.client.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserShortDto {
-    private Long id;
-    private String name;
+public class StatsDto {
+    private String app;
+    private String uri;
+    private Integer hits;
 }

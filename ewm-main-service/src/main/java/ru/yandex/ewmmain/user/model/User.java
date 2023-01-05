@@ -25,7 +25,4 @@ public class User {
 
     @Column(name = "name")
     private String name;
-
-    @Column(name = "isActive")
-    private Boolean active;
 }

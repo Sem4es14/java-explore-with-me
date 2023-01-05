@@ -1,4 +1,4 @@
-package ru.yandex.ewmmain.user.dto;
+package ru.yandex.ewmmain.category.responsedto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,8 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDto {
+public class CategoryDto {
     private Long id;
-    private String email;
     private String name;
 }

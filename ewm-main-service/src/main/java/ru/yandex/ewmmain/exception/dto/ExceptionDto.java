@@ -1,4 +1,4 @@
-package ru.yandex.ewmmain.exception;
+package ru.yandex.ewmmain.exception.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;

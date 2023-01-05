@@ -1,4 +1,4 @@
-package ru.yandex.ewmmain.comment.model;
+package ru.yandex.ewmmain.participationrequest.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,28 +11,27 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "comment")
+@Table(name = "requests")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Comment {
+public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "request_id")
     private Long id;
 
-    @Column(name = "text")
-    private String text;
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private RequestStatus status;
 
-    @Column(name = "created_at")
+    @Column(name = "created")
     private LocalDateTime created;
 
-    @Column(name = "edited_at")
-    private LocalDateTime edited;
-
     @ManyToOne
-    @JoinColumn(name = "author_id")
-    private User author;
+    @JoinColumn(name = "requester")
+    private User requester;
 
     @ManyToOne
     @JoinColumn(name = "event_id")
