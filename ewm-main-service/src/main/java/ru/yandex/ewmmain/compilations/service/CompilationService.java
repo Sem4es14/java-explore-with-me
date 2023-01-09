@@ -3,6 +3,7 @@ package ru.yandex.ewmmain.compilations.service;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import ru.yandex.ewmmain.client.ewmclient.EwmClient;
 import ru.yandex.ewmmain.compilations.mapper.CompilationsMapper;
 import ru.yandex.ewmmain.compilations.model.Compilation;
 import ru.yandex.ewmmain.compilations.repository.CompilationRepository;
@@ -11,6 +12,7 @@ import ru.yandex.ewmmain.compilations.responsedto.CompilationDto;
 import ru.yandex.ewmmain.event.model.Event;
 import ru.yandex.ewmmain.event.repository.EventRepository;
 import ru.yandex.ewmmain.exception.model.NotFoundException;
+import ru.yandex.ewmmain.participationrequest.repository.RequestRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +23,8 @@ import java.util.stream.Collectors;
 public class CompilationService {
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
+    private final EwmClient ewmClient;
+    private final RequestRepository requestRepository;
 
     public CompilationDto create(CompilationCreateRequest request) {
         List<Event> events = request.getEvents().stream().map(eventRepository::findById).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
@@ -29,7 +33,7 @@ public class CompilationService {
         compilation.setPinned(request.getPinned());
         compilation.setEvents(events);
 
-        return CompilationsMapper.fromCompilationToDto(compilationRepository.save(compilation));
+        return CompilationsMapper.fromCompilationToDto(compilationRepository.save(compilation), ewmClient, requestRepository);
     }
 
     public void delete(Long compilationId) {
@@ -45,12 +49,15 @@ public class CompilationService {
             throw new NotFoundException("Compilation with id: " + compilationId + " is not found");
         });
 
-        return CompilationsMapper.fromCompilationToDto(compilation);
+        return CompilationsMapper.fromCompilationToDto(compilation, ewmClient, requestRepository);
     }
 
     public List<CompilationDto> getAll(Boolean pinned, Integer from, Integer size) {
 
-        return CompilationsMapper.fromCompilationsToDtos(compilationRepository.findByPinned(pinned, PageRequest.of(from / size, size)));
+        return CompilationsMapper.fromCompilationsToDtos(
+                compilationRepository.findByPinned(pinned, PageRequest.of(from / size, size)),
+                ewmClient,
+                requestRepository);
     }
 
     public void deleteEventFromCompilation(Long compilationId, Long eventId) {
@@ -73,7 +80,7 @@ public class CompilationService {
         });
         compilation.getEvents().add(event);
 
-        return CompilationsMapper.fromCompilationToDto(compilationRepository.save(compilation));
+        return CompilationsMapper.fromCompilationToDto(compilationRepository.save(compilation), ewmClient, requestRepository);
     }
 
     public void unpin(Long compilationId) {
@@ -91,6 +98,6 @@ public class CompilationService {
         });
         compilation.setPinned(true);
 
-        return CompilationsMapper.fromCompilationToDto(compilationRepository.save(compilation));
+        return CompilationsMapper.fromCompilationToDto(compilationRepository.save(compilation), ewmClient, requestRepository);
     }
 }

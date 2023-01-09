@@ -18,6 +18,7 @@ import ru.yandex.ewmmain.event.responsedto.EventFullDto;
 import ru.yandex.ewmmain.event.responsedto.EventShortDto;
 import ru.yandex.ewmmain.exception.model.ForbiddenException;
 import ru.yandex.ewmmain.exception.model.NotFoundException;
+import ru.yandex.ewmmain.participationrequest.repository.RequestRepository;
 import ru.yandex.ewmmain.user.model.User;
 import ru.yandex.ewmmain.user.repository.UserRepository;
 
@@ -34,6 +35,7 @@ public class EventService {
     private final UserRepository userRepository;
     private final EwmClient ewmClient;
     private final CategoryRepository categoryRepository;
+    private final RequestRepository requestRepository;
 
     public EventFullDto createEvent(Long userId, EventCreateRequest request) {
         User user = userRepository.findById(userId).orElseThrow(() -> {
@@ -57,7 +59,7 @@ public class EventService {
         event.setCategory(category);
         event.setRequestModeration(request.getRequestModeration());
 
-        return EventMapper.fromEventToFullDto(eventRepository.save(event));
+        return EventMapper.fromEventToFullDto(eventRepository.save(event), ewmClient, requestRepository);
     }
 
     public EventFullDto updateByUser(Long userId, EventUpdateRequest request) {
@@ -81,7 +83,7 @@ public class EventService {
         event.setEventDate(request.getEventDate());
         event.setParticipantLimit(request.getParticipantLimit());
 
-        return EventMapper.fromEventToFullDto(eventRepository.save(event));
+        return EventMapper.fromEventToFullDto(eventRepository.save(event), ewmClient, requestRepository);
     }
 
     public EventFullDto updateByAdmin(Long eventId, EventAdminUpdateRequest request) {
@@ -99,7 +101,7 @@ public class EventService {
         event.setParticipantLimit(request.getParticipantLimit());
         event.setTitle(request.getTitle());
 
-        return EventMapper.fromEventToFullDto(eventRepository.save(event));
+        return EventMapper.fromEventToFullDto(eventRepository.save(event), ewmClient, requestRepository);
     }
 
     public EventFullDto publish(Long eventId) {
@@ -109,7 +111,7 @@ public class EventService {
         event.setPublishedOn(LocalDateTime.now());
         event.setState(EventState.PUBLISHED);
 
-        return EventMapper.fromEventToFullDto(eventRepository.save(event));
+        return EventMapper.fromEventToFullDto(eventRepository.save(event), ewmClient, requestRepository);
     }
 
     public EventFullDto rejectByAdmin(Long eventId) {
@@ -119,7 +121,7 @@ public class EventService {
         event.setPublishedOn(null);
         event.setState(EventState.CANCELED);
 
-        return EventMapper.fromEventToFullDto(eventRepository.save(event));
+        return EventMapper.fromEventToFullDto(eventRepository.save(event), ewmClient, requestRepository);
     }
 
     public EventFullDto getOfUserById(Long userId, Long eventId) {
@@ -133,7 +135,7 @@ public class EventService {
             throw new ForbiddenException("User with id: " + userId + " can not give information about this event");
         }
 
-        return EventMapper.fromEventToFullDto(event);
+        return EventMapper.fromEventToFullDto(event, ewmClient, requestRepository);
     }
 
     public EventFullDto rejectByUser(Long userId, Long eventId) {
@@ -151,12 +153,14 @@ public class EventService {
         }
         event.setState(EventState.CANCELED);
 
-        return EventMapper.fromEventToFullDto(event);
+        return EventMapper.fromEventToFullDto(event, ewmClient, requestRepository);
     }
 
     public List<EventShortDto> searchPublic(SearchParam searchParam, Long from, Long size, HttpServletRequest httpRequest) {
         ewmClient.hit(httpRequest);
-        return EventMapper.fromEventsToShortDtos(eventRepository.findBySearchParam(searchParam)).stream()
+        return EventMapper.fromEventsToShortDtos(
+                eventRepository.findBySearchParam(searchParam), ewmClient, requestRepository)
+                .stream()
                 .skip(from)
                 .limit(size)
                 .collect(Collectors.toList());
@@ -164,7 +168,8 @@ public class EventService {
 
     public List<EventFullDto> searchByAdmin(SearchParam searchParam, Long from, Long size) {
 
-        return EventMapper.fromEventsToFullDtos(eventRepository.findBySearchParam(searchParam)).stream()
+        return EventMapper.fromEventsToFullDtos(
+                eventRepository.findBySearchParam(searchParam), ewmClient, requestRepository).stream()
                 .skip(from)
                 .limit(size)
                 .collect(Collectors.toList());
@@ -175,7 +180,8 @@ public class EventService {
             throw new NotFoundException("User with id: " + userId + " is not found");
         });
 
-        return EventMapper.fromEventsToShortDtos(eventRepository.findByInitiator(user, PageRequest.of(from / size, size)));
+        return EventMapper.fromEventsToShortDtos(
+                eventRepository.findByInitiator(user, PageRequest.of(from / size, size)), ewmClient, requestRepository);
     }
 
     public EventFullDto getById(Long eventId, HttpServletRequest httpRequest) {
@@ -187,7 +193,7 @@ public class EventService {
             throw new ForbiddenException("This event not PUBLISHED yet");
         }
 
-        return EventMapper.fromEventToFullDto(event);
+        return EventMapper.fromEventToFullDto(event, ewmClient, requestRepository);
     }
 }
 

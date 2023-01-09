@@ -1,7 +1,5 @@
 package ru.yandex.ewmmain.event.mapper;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import ru.yandex.ewmmain.category.responsedto.CategoryDto;
 import ru.yandex.ewmmain.client.ewmclient.EwmClient;
 import ru.yandex.ewmmain.event.model.Event;
@@ -14,19 +12,9 @@ import ru.yandex.ewmmain.user.responsedto.UserShortDto;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
 public class EventMapper {
 
-    private static RequestRepository requestRepository;
-    private static EwmClient ewmClient;
-
-    @Autowired
-    public EventMapper(EwmClient ewmClient, RequestRepository requestRepository) {
-        EventMapper.ewmClient = ewmClient;
-        EventMapper.requestRepository = requestRepository;
-    }
-
-    public static EventFullDto fromEventToFullDto(Event event) {
+    public static EventFullDto fromEventToFullDto(Event event, EwmClient ewmClient, RequestRepository requestRepository) {
         return new EventFullDto(
                 event.getId(),
                 event.getTitle(),
@@ -53,13 +41,13 @@ public class EventMapper {
         );
     }
 
-    public static List<EventFullDto> fromEventsToFullDtos(List<Event> events) {
+    public static List<EventFullDto> fromEventsToFullDtos(List<Event> events, EwmClient ewmClient, RequestRepository requestRepository) {
         return events.stream()
-                .map(EventMapper::fromEventToFullDto)
+                .map(event -> EventMapper.fromEventToFullDto(event, ewmClient, requestRepository))
                 .collect(Collectors.toList());
     }
 
-    public static EventShortDto fromEventToShortDto(Event event) {
+    public static EventShortDto fromEventToShortDto(Event event, EwmClient ewmClient, RequestRepository requestRepository) {
         return new EventShortDto(
                 event.getId(),
                 event.getTitle(),
@@ -77,9 +65,9 @@ public class EventMapper {
         );
     }
 
-    public static List<EventShortDto> fromEventsToShortDtos(List<Event> events) {
+    public static List<EventShortDto> fromEventsToShortDtos(List<Event> events, EwmClient ewmClient, RequestRepository requestRepository) {
         return events.stream()
-                .map(EventMapper::fromEventToShortDto)
+                .map(event -> EventMapper.fromEventToShortDto(event, ewmClient, requestRepository))
                 .collect(Collectors.toList());
     }
 }
