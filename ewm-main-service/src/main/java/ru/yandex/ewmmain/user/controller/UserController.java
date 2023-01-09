@@ -27,14 +27,14 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    public void deleteUser(@PathVariable("userId") @Positive Long userId) {
+    public void deleteUser(@PathVariable("userId") @PositiveOrZero Long userId) {
         userService.deleteUser(userId);
     }
 
     @GetMapping
     public ResponseEntity<List<UserDto>> searchUsers(@RequestParam("ids") List<Long> ids,
-                                                     @RequestParam("from") @PositiveOrZero Integer from,
-                                                     @RequestParam("size") @Positive Integer size) {
+                                                     @RequestParam(value = "from", defaultValue = "0") @PositiveOrZero Integer from,
+                                                     @RequestParam(value = "size", defaultValue = "10") @Positive Integer size) {
         return ResponseEntity.of(Optional.of(userService.get(ids, from, size)));
     }
 }

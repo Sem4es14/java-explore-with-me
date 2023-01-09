@@ -1,4 +1,4 @@
-package ru.yandex.ewmmain.client.dto;
+package ru.yandex.ewmstatsservice.responsedto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class StatsDto {
+public class StatsResponse {
     private String app;
     private String uri;
     private Long hits;

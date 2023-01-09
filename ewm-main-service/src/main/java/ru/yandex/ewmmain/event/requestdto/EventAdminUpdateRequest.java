@@ -31,15 +31,11 @@ public class EventAdminUpdateRequest {
     @NotNull
     private Boolean paid;
     @NotNull
-    private Boolean requestModeration;
-    @NotNull
     @Positive
     private Long category;
     @NotNull
     @PositiveOrZero
     private Integer participantLimit;
-    @NotNull
-    private Location location;
 
 
     @Getter

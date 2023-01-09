@@ -16,6 +16,7 @@ import ru.yandex.ewmmain.user.model.User;
 import ru.yandex.ewmmain.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static ru.yandex.ewmmain.participationrequest.model.RequestStatus.*;
@@ -43,12 +44,12 @@ public class RequestService {
         if (!event.getState().equals(EventState.PUBLISHED)) {
             throw new ForbiddenException("Event must be PUBLISHED");
         }
-        if (requestRepository.countByEventAndStatus(event, APPROVED) >= event.getParticipantLimit()) {
+        if (requestRepository.countByEventAndStatus(event, CONFIRMED) >= event.getParticipantLimit()) {
             throw new ForbiddenException("Event with id" + eventId + "reached participant limit");
         }
         Request request = new Request();
-        request.setStatus(event.getRequestModeration() ? PENDING : APPROVED);
-        request.setCreated(LocalDateTime.now());
+        request.setStatus(event.getRequestModeration() ? PENDING : CONFIRMED);
+        request.setCreated(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
         request.setRequester(requester);
         request.setEvent(event);
 
@@ -70,7 +71,51 @@ public class RequestService {
         Request request = requestRepository.findById(requestId).orElseThrow(() -> {
             throw new NotFoundException("Request with id: " + requestId + " is not found");
         });
-        request.setStatus(REJECT);
+        request.setStatus(CANCELED);
+
+        return RequestMapper.fromRequestToDto(requestRepository.save(request));
+    }
+
+    public List<RequestDto> getRequestsByEvent(Long userId, Long eventId) {
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> {
+            throw new NotFoundException("Event with id: " + eventId + " is not found");
+        });
+        User user = userRepository.findById(userId).orElseThrow(() -> {
+            throw new NotFoundException("User with id: " + userId + " is not found");
+        });
+        if (!event.getInitiator().equals(user)) {
+            throw new ForbiddenException("User with id " + userId + " is not event initiator");
+        }
+
+        return RequestMapper.fromRequestsToDtos(requestRepository.findByEvent(event));
+    }
+
+    public RequestDto approveRequest(Long userId, Long eventId, Long requestId) {
+        if (eventRepository.findById(eventId).isEmpty()) {
+            throw new NotFoundException("Event with id " + eventId + " is not found");
+        }
+        if (userRepository.findById(userId).isEmpty()) {
+            throw new NotFoundException("User with id " + userId + " is not found");
+        }
+        Request request = requestRepository.findById(requestId).orElseThrow(() -> {
+            throw new NotFoundException("Request with id: " + requestId + " is not found");
+        });
+        request.setStatus(CONFIRMED);
+
+        return RequestMapper.fromRequestToDto(requestRepository.save(request));
+    }
+
+    public RequestDto rejectRequest(Long userId, Long eventId, Long requestId) {
+        if (eventRepository.findById(eventId).isEmpty()) {
+            throw new NotFoundException("Event with id " + eventId + " is not found");
+        }
+        if (userRepository.findById(userId).isEmpty()) {
+            throw new NotFoundException("User with id " + userId + " is not found");
+        }
+        Request request = requestRepository.findById(requestId).orElseThrow(() -> {
+            throw new NotFoundException("Request with id: " + requestId + " is not found");
+        });
+        request.setStatus(REJECTED);
 
         return RequestMapper.fromRequestToDto(requestRepository.save(request));
     }

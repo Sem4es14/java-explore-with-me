@@ -17,8 +17,11 @@ import java.time.LocalDateTime;
 public class Stats {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "statistic_id")
+    @Column(name = "id")
     private Long id;
+
+    @Column(name = "app")
+    private String app;
 
     @Column(name = "uri")
     private String uri;
@@ -26,6 +29,6 @@ public class Stats {
     @Column(name = "ip")
     private String ip;
 
-    @Column(name = "timestamp")
-    private LocalDateTime timestamp;
+    @Column(name = "datetime")
+    private LocalDateTime datetime;
 }

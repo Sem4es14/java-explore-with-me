@@ -1,8 +1,9 @@
 package ru.yandex.ewmmain.event.mapper;
 
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.yandex.ewmmain.category.responsedto.CategoryDto;
+import ru.yandex.ewmmain.client.ewmclient.EwmClient;
 import ru.yandex.ewmmain.event.model.Event;
 import ru.yandex.ewmmain.event.responsedto.EventFullDto;
 import ru.yandex.ewmmain.event.responsedto.EventShortDto;
@@ -14,9 +15,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-@AllArgsConstructor
 public class EventMapper {
+
     private static RequestRepository requestRepository;
+    private static EwmClient ewmClient;
+    @Autowired
+    public EventMapper(EwmClient ewmClient,RequestRepository requestRepository) {
+        this.ewmClient = ewmClient;
+        this.requestRepository = requestRepository;
+    }
+
     public static EventFullDto fromEventToFullDto(Event event) {
         return new EventFullDto(
                 event.getId(),
@@ -36,8 +44,8 @@ public class EventMapper {
                 new UserShortDto(
                         event.getInitiator().getId(),
                         event.getInitiator().getName()),
-                null,
-                requestRepository.countByEventAndStatus(event, RequestStatus.APPROVED),
+                ewmClient.get(List.of("/events/" + event.getId())).get(0).getHits(),
+                requestRepository.countByEventAndStatus(event, RequestStatus.CONFIRMED),
                 new EventFullDto.Location(
                         event.getLat(),
                         event.getLon())
@@ -63,9 +71,9 @@ public class EventMapper {
                 new UserShortDto(
                         event.getInitiator().getId(),
                         event.getInitiator().getName()),
-                null,
-                requestRepository.countByEventAndStatus(event, RequestStatus.APPROVED)
-              );
+                ewmClient.get(List.of("/events/" + event.getId())).get(0).getHits(),
+                requestRepository.countByEventAndStatus(event, RequestStatus.CONFIRMED)
+        );
     }
 
     public static List<EventShortDto> fromEventsToShortDtos(List<Event> events) {

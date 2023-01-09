@@ -3,20 +3,21 @@ package ru.yandex.ewmmain.category.service;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import ru.yandex.ewmmain.category.responsedto.CategoryDto;
 import ru.yandex.ewmmain.category.mapper.CategoryMapper;
 import ru.yandex.ewmmain.category.model.Category;
 import ru.yandex.ewmmain.category.repository.CategoryRepository;
 import ru.yandex.ewmmain.category.requestdto.CategoryCreateRequest;
 import ru.yandex.ewmmain.category.requestdto.CategoryUpdateRequest;
+import ru.yandex.ewmmain.category.responsedto.CategoryDto;
 import ru.yandex.ewmmain.exception.model.AlreadyExists;
 import ru.yandex.ewmmain.exception.model.NotFoundException;
+import ru.yandex.ewmmain.exception.model.ValidationException;
 
 import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class CategoryService{
+public class CategoryService {
     private final CategoryRepository categoryRepository;
 
     public List<CategoryDto> getAll(Long from, Integer size) {
@@ -55,6 +56,9 @@ public class CategoryService{
         Category category = categoryRepository.findById(request.getId()).orElseThrow(() -> {
             throw new NotFoundException("User with id: " + request.getId() + " is not found.");
         });
+        if (categoryRepository.findByName(request.getName()).isPresent()) {
+            throw new AlreadyExists("Category with name " + request.getName() + " is already exists");
+        }
         category.setName(request.getName());
 
         return CategoryMapper.fromCategoryToDto(categoryRepository.save(category));

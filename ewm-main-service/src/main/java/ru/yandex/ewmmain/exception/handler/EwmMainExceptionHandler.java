@@ -71,4 +71,15 @@ public class EwmMainExceptionHandler {
                 LocalDateTime.now()
         ), HttpStatus.BAD_REQUEST);
     }
+
+    /*@ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ExceptionDto> illegalArgumentException(IllegalArgumentException e) {
+        return new ResponseEntity<>(new ExceptionDto(
+                e.getMessage(),
+                "Validation Error",
+                HttpStatus.BAD_REQUEST,
+                List.of(),
+                LocalDateTime.now()
+        ), HttpStatus.BAD_REQUEST);
+    }*/
 }

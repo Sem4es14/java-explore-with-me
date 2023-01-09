@@ -15,4 +15,6 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     Long countByEventAndStatus(Event event, RequestStatus status);
 
     List<Request> findByRequester(User requester);
+
+    List<Request> findByEvent(Event event);
 }

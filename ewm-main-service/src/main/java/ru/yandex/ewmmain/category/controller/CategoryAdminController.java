@@ -15,7 +15,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/admin/categories")
-@Validated
 @AllArgsConstructor
 public class CategoryAdminController {
     private final CategoryService categoryService;
@@ -26,7 +25,7 @@ public class CategoryAdminController {
     }
 
     @PatchMapping
-    public ResponseEntity<CategoryDto> updateCategory(@RequestBody @Valid CategoryUpdateRequest request) {
+    public ResponseEntity<CategoryDto> updateCategory(@Valid @RequestBody CategoryUpdateRequest request) {
         return ResponseEntity.of(Optional.of(categoryService.updateCategory(request)));
     }
 

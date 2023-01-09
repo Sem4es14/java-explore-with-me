@@ -1,4 +1,4 @@
-package ru.yandex.ewmmain.category.requestdto;
+package ru.yandex.ewmmain.compilations.requestdto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,17 +7,18 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
+import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CategoryUpdateRequest {
-    @NotNull
-    @Positive
-    private Long id;
-    @NotNull
+public class CompilationCreateRequest {
     @NotEmpty
-    private String name;
+    @NotNull
+    private String title;
+    @NotNull
+    private Boolean pinned;
+    @NotNull
+    private List<Long> events;
 }
