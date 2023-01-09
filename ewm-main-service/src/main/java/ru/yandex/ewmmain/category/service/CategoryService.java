@@ -11,7 +11,6 @@ import ru.yandex.ewmmain.category.requestdto.CategoryUpdateRequest;
 import ru.yandex.ewmmain.category.responsedto.CategoryDto;
 import ru.yandex.ewmmain.exception.model.AlreadyExists;
 import ru.yandex.ewmmain.exception.model.NotFoundException;
-import ru.yandex.ewmmain.exception.model.ValidationException;
 
 import java.util.List;
 

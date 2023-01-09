@@ -1,7 +1,6 @@
 package ru.yandex.ewmmain.event.controller;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,10 +31,10 @@ public class EventPublicController {
                                                       @RequestParam(value = "paid", required = false)
                                                       Boolean paid,
                                                       @RequestParam(value = "rangeStart", required = false)
-                                                          @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+                                                      @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
                                                       LocalDateTime rangeStart,
                                                       @RequestParam(value = "rangeEnd", required = false)
-                                                          @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+                                                      @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
                                                       LocalDateTime rangeEnd,
                                                       @RequestParam(value = "sort", required = false,
                                                               defaultValue = "EVENT_DATE") SortType sort,

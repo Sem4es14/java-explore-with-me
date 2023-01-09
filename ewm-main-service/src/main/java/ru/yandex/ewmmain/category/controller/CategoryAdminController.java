@@ -2,11 +2,10 @@ package ru.yandex.ewmmain.category.controller;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.ewmmain.category.responsedto.CategoryDto;
 import ru.yandex.ewmmain.category.requestdto.CategoryCreateRequest;
 import ru.yandex.ewmmain.category.requestdto.CategoryUpdateRequest;
+import ru.yandex.ewmmain.category.responsedto.CategoryDto;
 import ru.yandex.ewmmain.category.service.CategoryService;
 
 import javax.validation.Valid;

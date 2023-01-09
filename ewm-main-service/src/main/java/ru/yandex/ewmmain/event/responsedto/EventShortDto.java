@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.yandex.ewmmain.category.model.Category;
 import ru.yandex.ewmmain.category.responsedto.CategoryDto;
 import ru.yandex.ewmmain.user.responsedto.UserShortDto;
 

@@ -19,8 +19,9 @@ public class EventMapper {
 
     private static RequestRepository requestRepository;
     private static EwmClient ewmClient;
+
     @Autowired
-    public EventMapper(EwmClient ewmClient,RequestRepository requestRepository) {
+    public EventMapper(EwmClient ewmClient, RequestRepository requestRepository) {
         this.ewmClient = ewmClient;
         this.requestRepository = requestRepository;
     }

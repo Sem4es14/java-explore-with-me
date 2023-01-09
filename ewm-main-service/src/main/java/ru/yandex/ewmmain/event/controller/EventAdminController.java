@@ -3,7 +3,6 @@ package ru.yandex.ewmmain.event.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.ewmmain.event.model.EventState;
 import ru.yandex.ewmmain.event.requestdto.EventAdminUpdateRequest;
@@ -32,10 +31,10 @@ public class EventAdminController {
                                                             @RequestParam(value = "categories", required = false)
                                                             List<Long> categories,
                                                             @RequestParam(value = "rangeStart", required = false)
-                                                                @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+                                                            @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
                                                             LocalDateTime rangeStart,
                                                             @RequestParam(value = "rangeEnd", required = false)
-                                                                @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+                                                            @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
                                                             LocalDateTime rangeEnd,
                                                             @RequestParam(value = "from", defaultValue = "0")
                                                             @PositiveOrZero Long from,
