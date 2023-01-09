@@ -74,7 +74,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ru.yandex.ewmstats.EwmStatsApplication</mainClass>
+                            <mainClass>ru.yandex.ewmstatsservice.EwmStatsServiceApplication</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

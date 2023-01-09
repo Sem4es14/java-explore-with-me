@@ -84,7 +84,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>ru.yandex.ewmservice.EwmServiceApplication</mainClass>
+                            <mainClass>ru.yandex.ewmmain.EwmMainApplication</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
