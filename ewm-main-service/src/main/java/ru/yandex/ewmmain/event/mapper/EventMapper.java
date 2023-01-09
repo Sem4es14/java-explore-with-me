@@ -22,8 +22,8 @@ public class EventMapper {
 
     @Autowired
     public EventMapper(EwmClient ewmClient, RequestRepository requestRepository) {
-        this.ewmClient = ewmClient;
-        this.requestRepository = requestRepository;
+        EventMapper.ewmClient = ewmClient;
+        EventMapper.requestRepository = requestRepository;
     }
 
     public static EventFullDto fromEventToFullDto(Event event) {
