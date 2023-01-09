@@ -1,4 +1,4 @@
 FROM openjdk:11
-COPY target/*.jar ewm_stats_service.jar
+COPY target/*.jar ewm-stats-service.jar
 EXPOSE 9090
-ENTRYPOINT ["java","-jar","/ewm_stats_service.jar"]
+ENTRYPOINT ["java","-jar","/ewm-stats-service.jar"]
