@@ -21,7 +21,6 @@ public class StatsController {
                                                         @RequestParam(value = "uris") List<String> uris,
                                                         @RequestParam(value = "unique", defaultValue = "false")
                                                         Boolean unique) {
-        System.out.println("пришел запрос");
         return ResponseEntity.of(Optional.of(statsService.get(start, end, uris, unique)));
     }
 
