@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.yandex.ewmmain.category.model.Category;
 import ru.yandex.ewmmain.category.repository.CategoryRepository;
+import ru.yandex.ewmmain.client.dto.StatsDto;
 import ru.yandex.ewmmain.client.ewmclient.EwmClient;
 import ru.yandex.ewmmain.event.mapper.EventMapper;
 import ru.yandex.ewmmain.event.model.Event;
@@ -18,6 +19,8 @@ import ru.yandex.ewmmain.event.responsedto.EventFullDto;
 import ru.yandex.ewmmain.event.responsedto.EventShortDto;
 import ru.yandex.ewmmain.exception.model.ForbiddenException;
 import ru.yandex.ewmmain.exception.model.NotFoundException;
+import ru.yandex.ewmmain.participationrequest.model.ConfirmedRequests;
+import ru.yandex.ewmmain.participationrequest.model.RequestStatus;
 import ru.yandex.ewmmain.participationrequest.repository.RequestRepository;
 import ru.yandex.ewmmain.user.model.User;
 import ru.yandex.ewmmain.user.repository.UserRepository;
@@ -25,7 +28,9 @@ import ru.yandex.ewmmain.user.repository.UserRepository;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,7 +64,7 @@ public class EventService {
         event.setCategory(category);
         event.setRequestModeration(request.getRequestModeration());
 
-        return EventMapper.fromEventToFullDto(eventRepository.save(event), ewmClient, requestRepository);
+        return EventMapper.fromEventToFullDto(eventRepository.save(event), 0L, 0L);
     }
 
     public EventFullDto updateByUser(Long userId, EventUpdateRequest request) {
@@ -83,7 +88,7 @@ public class EventService {
         event.setEventDate(request.getEventDate());
         event.setParticipantLimit(request.getParticipantLimit());
 
-        return EventMapper.fromEventToFullDto(eventRepository.save(event), ewmClient, requestRepository);
+        return EventMapper.fromEventToFullDto(eventRepository.save(event), getViews(event), getConfirmedRequests(event));
     }
 
     public EventFullDto updateByAdmin(Long eventId, EventAdminUpdateRequest request) {
@@ -101,7 +106,7 @@ public class EventService {
         event.setParticipantLimit(request.getParticipantLimit());
         event.setTitle(request.getTitle());
 
-        return EventMapper.fromEventToFullDto(eventRepository.save(event), ewmClient, requestRepository);
+        return EventMapper.fromEventToFullDto(eventRepository.save(event), getViews(event), getConfirmedRequests(event));
     }
 
     public EventFullDto publish(Long eventId) {
@@ -111,7 +116,7 @@ public class EventService {
         event.setPublishedOn(LocalDateTime.now());
         event.setState(EventState.PUBLISHED);
 
-        return EventMapper.fromEventToFullDto(eventRepository.save(event), ewmClient, requestRepository);
+        return EventMapper.fromEventToFullDto(eventRepository.save(event), getViews(event), getConfirmedRequests(event));
     }
 
     public EventFullDto rejectByAdmin(Long eventId) {
@@ -121,7 +126,7 @@ public class EventService {
         event.setPublishedOn(null);
         event.setState(EventState.CANCELED);
 
-        return EventMapper.fromEventToFullDto(eventRepository.save(event), ewmClient, requestRepository);
+        return EventMapper.fromEventToFullDto(eventRepository.save(event), getViews(event), getConfirmedRequests(event));
     }
 
     public EventFullDto getOfUserById(Long userId, Long eventId) {
@@ -135,7 +140,7 @@ public class EventService {
             throw new ForbiddenException("User with id: " + userId + " can not give information about this event");
         }
 
-        return EventMapper.fromEventToFullDto(event, ewmClient, requestRepository);
+        return EventMapper.fromEventToFullDto(event, getViews(event), getConfirmedRequests(event));
     }
 
     public EventFullDto rejectByUser(Long userId, Long eventId) {
@@ -153,23 +158,32 @@ public class EventService {
         }
         event.setState(EventState.CANCELED);
 
-        return EventMapper.fromEventToFullDto(event, ewmClient, requestRepository);
+        return EventMapper.fromEventToFullDto(event, getViews(event), getConfirmedRequests(event));
     }
 
     public List<EventShortDto> searchPublic(SearchParam searchParam, Long from, Long size, HttpServletRequest httpRequest) {
+        List<Event> events = eventRepository.findBySearchParam(searchParam);
         ewmClient.hit(httpRequest);
-        return EventMapper.fromEventsToShortDtos(
-                eventRepository.findBySearchParam(searchParam), ewmClient, requestRepository)
-                .stream()
+        return events.stream()
+                .map(event -> EventMapper.fromEventToShortDto(
+                        event,
+                        getViews(event),
+                        getConfirmedRequestsMap(events).get(event.getId())
+                ))
                 .skip(from)
                 .limit(size)
                 .collect(Collectors.toList());
     }
 
     public List<EventFullDto> searchByAdmin(SearchParam searchParam, Long from, Long size) {
+        List<Event> events = eventRepository.findBySearchParam(searchParam);
 
-        return EventMapper.fromEventsToFullDtos(
-                eventRepository.findBySearchParam(searchParam), ewmClient, requestRepository).stream()
+        return eventRepository.findBySearchParam(searchParam).stream()
+                .map(event -> EventMapper.fromEventToFullDto(
+                        event,
+                        getViews(event),
+                        getConfirmedRequestsMap(events).get(event.getId())
+                ))
                 .skip(from)
                 .limit(size)
                 .collect(Collectors.toList());
@@ -179,9 +193,17 @@ public class EventService {
         User user = userRepository.findById(userId).orElseThrow(() -> {
             throw new NotFoundException("User with id: " + userId + " is not found");
         });
+        List<Event> events = eventRepository.findByInitiator(user, PageRequest.of(from / size, size));
 
-        return EventMapper.fromEventsToShortDtos(
-                eventRepository.findByInitiator(user, PageRequest.of(from / size, size)), ewmClient, requestRepository);
+        return events.stream()
+                .map(event -> EventMapper.fromEventToShortDto(
+                        event,
+                        getViews(event),
+                        getConfirmedRequestsMap(events).get(event.getId())
+                ))
+                .skip(from)
+                .limit(size)
+                .collect(Collectors.toList());
     }
 
     public EventFullDto getById(Long eventId, HttpServletRequest httpRequest) {
@@ -193,7 +215,33 @@ public class EventService {
             throw new ForbiddenException("This event not PUBLISHED yet");
         }
 
-        return EventMapper.fromEventToFullDto(event, ewmClient, requestRepository);
+        return EventMapper.fromEventToFullDto(event, getViews(event), getConfirmedRequests(event));
+    }
+
+    private Long getViews(Event event) {
+        List<StatsDto> statsDtos = ewmClient.get(List.of("/events/" + event.getId()));
+        if (statsDtos.size() == 0) {
+            return 0L;
+        }
+        return statsDtos.get(0).getHits();
+    }
+
+    private Long getConfirmedRequests(Event event) {
+        return requestRepository.countByEventAndStatus(event, RequestStatus.CONFIRMED);
+    }
+
+    private Map<Long, Long> getConfirmedRequestsMap(List<Event> events) {
+        Long[] eventIds = events.stream()
+                .map(Event::getId)
+                .toArray(Long[]::new);
+
+        Map<Long, Long> confirmedRequestsMap = new HashMap<>();
+
+        for (ConfirmedRequests confirmedRequests : requestRepository.countConfirmedRequests(eventIds)) {
+            confirmedRequestsMap.put(confirmedRequests.getEventId(), confirmedRequests.getCount());
+        }
+
+        return confirmedRequestsMap;
     }
 }
 

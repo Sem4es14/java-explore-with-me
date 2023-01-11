@@ -2,6 +2,7 @@ package ru.yandex.ewmstatsservice.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.ewmstatsservice.mapper.StatsMapper;
 import ru.yandex.ewmstatsservice.model.Stats;
 import ru.yandex.ewmstatsservice.repository.StatsRepository;
 import ru.yandex.ewmstatsservice.requestdto.StatsRequest;
@@ -9,7 +10,6 @@ import ru.yandex.ewmstatsservice.responsedto.StatsResponse;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -31,12 +31,10 @@ public class StatsService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime start = LocalDateTime.parse(startStr, formatter);
         LocalDateTime end = LocalDateTime.parse(endStr, formatter);
-        List<StatsResponse> stats = new ArrayList<>();
-        for (String url : urls) {
-            Long count = unique ? statsRepository.countUniq(start, end, url) : statsRepository.count(start, end, url);
-            stats.add(new StatsResponse("ewm-main-service", url, count));
-        }
 
-        return stats;
+        return unique ?
+                StatsMapper.fromDbToStatsResponses(statsRepository.countUniq(start, end, urls.toArray(new String[0]))) :
+                StatsMapper.fromDbToStatsResponses(statsRepository.count(start, end, urls.toArray(new String[0])));
+
     }
 }
