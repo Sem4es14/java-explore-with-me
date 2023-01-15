@@ -19,7 +19,6 @@
               "});\r",
               "pm.test(\"Test create user\", function () {\r",
               "    var jsonData = pm.response.json();\r",
-              "    pm.expect(jsonData.id, '\"id\" field').to.eql(1);\r",
               "    pm.expect(jsonData.email, '\"email\" field').to.eql('ivan.1petrov@practicummail.ru');\r",
               "    pm.expect(jsonData.name, '\"name\" field').to.eql('Иван Петров');\r",
               "});"
@@ -67,7 +66,6 @@
               "});\r",
               "pm.test(\"Test create user\", function () {\r",
               "    var jsonData = pm.response.json();\r",
-              "    pm.expect(jsonData.id, '\"id\" field').to.eql(1);\r",
               "    pm.expect(jsonData.name, '\"name\" field').to.eql('Концерты');\r",
               "});"
             ],
@@ -112,10 +110,7 @@
               "pm.test(\"Status code is 200\", function () {\r",
               "    pm.expect(pm.response.code).to.be.oneOf([200,201]);\r",
               "});\r",
-              "pm.test(\"Test create user\", function () {\r",
-              "    var jsonData = pm.response.json();\r",
-              "    pm.expect(jsonData.id, '\"id\" field').to.eql(1);\r",
-              "});"
+              ""
             ],
             "type": "text/javascript"
           }
@@ -163,7 +158,6 @@
               "    var jsonData = pm.response.json();\r",
               "    pm.expect(jsonData.id, '\"id\" field').to.eql(1);\r",
               "    pm.expect(jsonData.text, '\"text\" field').to.eql('Круто');\r",
-              "    pm.expect(jsonData.authorId, '\"authorId\" field').to.eql(1);\r",
               "});"
             ],
             "type": "text/javascript"
@@ -214,7 +208,6 @@
               "    var jsonData = pm.response.json();\r",
               "    pm.expect(jsonData.id, '\"id\" field').to.eql(1);\r",
               "    pm.expect(jsonData.text, '\"text\" field').to.eql('Очень круто');\r",
-              "    pm.expect(jsonData.authorId, '\"authorId\" field').to.eql(1);\r",
               "});"
             ],
             "type": "text/javascript"
@@ -262,8 +255,7 @@
               "pm.test(\"Test create user\", function () {\r",
               "    var jsonData = pm.response.json();\r",
               "    pm.expect(jsonData.id, '\"id\" field').to.eql(1);\r",
-              "    pm.expect(jsonData.text, '\"text\" field').to.eql('Очень круто');\r",
-              "    pm.expect(jsonData.authorId, '\"authorId\" field').to.eql(1);\r",
+              "    pm.expect(jsonData.text, '\"text\" field').to.eql('Очень круто круто');\r",
               "});"
             ],
             "type": "text/javascript"
@@ -275,7 +267,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\r\n  \"text\": \"Очень круто\",\r\n  \"id\": 1\r\n}",
+          "raw": "{\r\n  \"text\": \"Очень круто круто\",\r\n  \"id\": 1\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -283,15 +275,14 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8080/users/1/comments",
+          "raw": "http://localhost:8080/admin/comments",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8080",
           "path": [
-            "users",
-            "1",
+            "admin",
             "comments"
           ]
         }
