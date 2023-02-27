@@ -7,6 +7,8 @@ import ru.yandex.ewmmain.category.model.Category;
 import ru.yandex.ewmmain.category.repository.CategoryRepository;
 import ru.yandex.ewmmain.client.dto.StatsDto;
 import ru.yandex.ewmmain.client.ewmclient.EwmClient;
+import ru.yandex.ewmmain.comments.model.Comment;
+import ru.yandex.ewmmain.comments.repository.CommentRepository;
 import ru.yandex.ewmmain.event.mapper.EventMapper;
 import ru.yandex.ewmmain.event.model.Event;
 import ru.yandex.ewmmain.event.model.EventState;
@@ -41,6 +43,7 @@ public class EventService {
     private final EwmClient ewmClient;
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
+    private  final CommentRepository commentRepository;
 
     public EventFullDto createEvent(Long userId, EventCreateRequest request) {
         User user = userRepository.findById(userId).orElseThrow(() -> {
@@ -64,7 +67,7 @@ public class EventService {
         event.setCategory(category);
         event.setRequestModeration(request.getRequestModeration());
 
-        return EventMapper.fromEventToFullDto(eventRepository.save(event), 0L, 0L);
+        return EventMapper.fromEventToFullDto(eventRepository.save(event), 0L, 0L, List.of());
     }
 
     public EventFullDto updateByUser(Long userId, EventUpdateRequest request) {
@@ -88,7 +91,13 @@ public class EventService {
         event.setEventDate(request.getEventDate());
         event.setParticipantLimit(request.getParticipantLimit());
 
-        return EventMapper.fromEventToFullDto(eventRepository.save(event), getViews(event), getConfirmedRequests(event));
+        List<Comment> comments = commentRepository.findByEvent(event);
+
+        return EventMapper.fromEventToFullDto(
+                eventRepository.save(event),
+                getViews(event),
+                getConfirmedRequests(event),
+                comments);
     }
 
     public EventFullDto updateByAdmin(Long eventId, EventAdminUpdateRequest request) {
@@ -106,7 +115,12 @@ public class EventService {
         event.setParticipantLimit(request.getParticipantLimit());
         event.setTitle(request.getTitle());
 
-        return EventMapper.fromEventToFullDto(eventRepository.save(event), getViews(event), getConfirmedRequests(event));
+        List<Comment> comments = commentRepository.findByEvent(event);
+
+        return EventMapper.fromEventToFullDto(
+                eventRepository.save(event),
+                getViews(event), getConfirmedRequests(event),
+                comments);
     }
 
     public EventFullDto publish(Long eventId) {
@@ -116,7 +130,12 @@ public class EventService {
         event.setPublishedOn(LocalDateTime.now());
         event.setState(EventState.PUBLISHED);
 
-        return EventMapper.fromEventToFullDto(eventRepository.save(event), getViews(event), getConfirmedRequests(event));
+        List<Comment> comments = commentRepository.findByEvent(event);
+
+        return EventMapper.fromEventToFullDto(
+                eventRepository.save(event),
+                getViews(event), getConfirmedRequests(event),
+                comments);
     }
 
     public EventFullDto rejectByAdmin(Long eventId) {
@@ -126,7 +145,12 @@ public class EventService {
         event.setPublishedOn(null);
         event.setState(EventState.CANCELED);
 
-        return EventMapper.fromEventToFullDto(eventRepository.save(event), getViews(event), getConfirmedRequests(event));
+        List<Comment> comments = commentRepository.findByEvent(event);
+
+        return EventMapper.fromEventToFullDto(
+                eventRepository.save(event),
+                getViews(event), getConfirmedRequests(event),
+                comments);
     }
 
     public EventFullDto getOfUserById(Long userId, Long eventId) {
@@ -140,7 +164,12 @@ public class EventService {
             throw new ForbiddenException("User with id: " + userId + " can not give information about this event");
         }
 
-        return EventMapper.fromEventToFullDto(event, getViews(event), getConfirmedRequests(event));
+        List<Comment> comments = commentRepository.findByEvent(event);
+
+        return EventMapper.fromEventToFullDto(
+                event,
+                getViews(event), getConfirmedRequests(event),
+                comments);
     }
 
     public EventFullDto rejectByUser(Long userId, Long eventId) {
@@ -158,7 +187,13 @@ public class EventService {
         }
         event.setState(EventState.CANCELED);
 
-        return EventMapper.fromEventToFullDto(event, getViews(event), getConfirmedRequests(event));
+        List<Comment> comments = commentRepository.findByEvent(event);
+
+        return EventMapper.fromEventToFullDto(
+                event,
+                getViews(event),
+                getConfirmedRequests(event),
+                comments);
     }
 
     public List<EventShortDto> searchPublic(SearchParam searchParam, Long from, Long size, HttpServletRequest httpRequest) {
@@ -177,12 +212,14 @@ public class EventService {
 
     public List<EventFullDto> searchByAdmin(SearchParam searchParam, Long from, Long size) {
         List<Event> events = eventRepository.findBySearchParam(searchParam);
+        Map<Long, List<Comment>> commentMap = getCommentsMap(events);
 
         return eventRepository.findBySearchParam(searchParam).stream()
                 .map(event -> EventMapper.fromEventToFullDto(
                         event,
                         getViews(event),
-                        getConfirmedRequestsMap(events).get(event.getId())
+                        getConfirmedRequestsMap(events).get(event.getId()),
+                        commentMap.get(event.getId())
                 ))
                 .skip(from)
                 .limit(size)
@@ -215,7 +252,13 @@ public class EventService {
             throw new ForbiddenException("This event not PUBLISHED yet");
         }
 
-        return EventMapper.fromEventToFullDto(event, getViews(event), getConfirmedRequests(event));
+        List<Comment> comments = commentRepository.findByEvent(event);
+
+        return EventMapper.fromEventToFullDto(
+                event,
+                getViews(event),
+                getConfirmedRequests(event),
+                comments);
     }
 
     private Long getViews(Event event) {
@@ -242,6 +285,18 @@ public class EventService {
         }
 
         return confirmedRequestsMap;
+    }
+
+    private Map<Long, List<Comment>> getCommentsMap(List<Event> events) {
+        Map<Long, List<Comment>> commentMap = new HashMap<>();
+        List<Comment> comments = commentRepository.findByEventIn(events);
+        for (Event event : events) {
+            commentMap.put(event.getId(), comments.stream()
+                    .filter(comment -> comment.getEvent().equals(event))
+                    .collect(Collectors.toList()));
+        }
+
+        return commentMap;
     }
 }
 
